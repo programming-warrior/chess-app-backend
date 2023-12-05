@@ -1,0 +1,25 @@
+{
+  "name": "chess-app-backend",
+  "version": "1.0.0",
+  "description": "\"backend application for the chess app\"",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/app.js",
+    "production": "node app.js"
+  },
+  "keywords": [
+    "multiplayer",
+    "chess",
+    "app"
+  ],
+  "author": "Yusuf Azam",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "websocket": "^1.0.34"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
