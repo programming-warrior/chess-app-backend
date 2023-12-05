@@ -64,7 +64,7 @@ getMoves.rook=(start,piece,boardPos)=>{
       moves.push(temp);
       temp=temp.split('')[0]+(parseInt(temp.split('')[1])+1).toString();
     }
-    if(boardPos.hasOwnProperty(temp)){
+    if(boardPos.hasOwnProperty(temp) && boardPos[temp].split('-')[1] !==piece.split('-')[1]){
       moves.push(temp);
     }
 
@@ -74,7 +74,7 @@ getMoves.rook=(start,piece,boardPos)=>{
       moves.push(temp);
       temp=temp.split('')[0]+(parseInt(temp.split('')[1])-1).toString();
     }
-    if(boardPos.hasOwnProperty(temp)){
+    if(boardPos.hasOwnProperty(temp) && boardPos[temp].split('-')[1] !==piece.split('-')[1]){
       moves.push(temp);
     }
 
@@ -84,7 +84,7 @@ getMoves.rook=(start,piece,boardPos)=>{
       moves.push(temp);
       temp=String.fromCharCode(temp.split('')[0].charCodeAt(0)-1)+temp.split('')[1];
     }
-    if(boardPos.hasOwnProperty(temp)){
+    if(boardPos.hasOwnProperty(temp) && boardPos[temp].split('-')[1] !==piece.split('-')[1]){
       moves.push(temp);
     }
 
@@ -94,7 +94,7 @@ getMoves.rook=(start,piece,boardPos)=>{
       moves.push(temp);
       temp=String.fromCharCode(temp.split('')[0].charCodeAt(0)+1)+temp.split('')[1];
     }
-    if(boardPos.hasOwnProperty(temp)){
+    if(boardPos.hasOwnProperty(temp) && boardPos[temp].split('-')[1] !==piece.split('-')[1]){
       moves.push(temp);
     }
 
@@ -110,7 +110,7 @@ getMoves.bishop=(start,piece,boardPos)=>{
       moves.push(temp);
       temp=String.fromCharCode(temp.split('')[0].charCodeAt(0)-1)+(parseInt(temp.split('')[1])+1).toString();
     }
-    if(boardPos.hasOwnProperty(temp)){
+    if(boardPos.hasOwnProperty(temp) && boardPos[temp].split('-')[1] !==piece.split('-')[1]){
       moves.push(temp);
     }
 
@@ -121,7 +121,7 @@ getMoves.bishop=(start,piece,boardPos)=>{
       temp=String.fromCharCode(temp.split('')[0].charCodeAt(0)+1)+(parseInt(temp.split('')[1])+1).toString();
     }
 
-    if(boardPos.hasOwnProperty(temp)){
+    if(boardPos.hasOwnProperty(temp) && boardPos[temp].split('-')[1] !==piece.split('-')[1]){
       moves.push(temp);
     }
 
@@ -132,7 +132,7 @@ getMoves.bishop=(start,piece,boardPos)=>{
       temp=String.fromCharCode(temp.split('')[0].charCodeAt(0)-1)+(parseInt(temp.split('')[1])-1).toString();
     }
 
-    if(boardPos.hasOwnProperty(temp)){
+    if(boardPos.hasOwnProperty(temp) && boardPos[temp].split('-')[1] !==piece.split('-')[1]){
       moves.push(temp);
     }
 
@@ -143,7 +143,7 @@ getMoves.bishop=(start,piece,boardPos)=>{
       temp=String.fromCharCode(temp.split('')[0].charCodeAt(0)+1)+(parseInt(temp.split('')[1])-1).toString();
     }
 
-    if(boardPos.hasOwnProperty(temp)){
+    if(boardPos.hasOwnProperty(temp) && boardPos[temp].split('-')[1] !==piece.split('-')[1]){
       moves.push(temp);
     }
     return moves;
