@@ -1,4 +1,4 @@
-module.exports=function checkCastling(moves,end,piece,boardPos){
+module.exports=function checkCastling(moves,end,piece,boardPos,canShortCastle,canLongCastle){
     
     let col=piece.split('-')[1];
     if(col==='w' && (boardPos['h1']===`r-${col}`|| boardPos['a1']===`r-${col}`) && boardPos['e1']===`k-${col}` ){

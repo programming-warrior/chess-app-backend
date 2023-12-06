@@ -57,24 +57,30 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
 
         //addition condition for king movement
         if(type==='k'){
+          if(check.kingPos && check.attackingPiece){
+            //temporarily removing the attacked king from the board
+            boardPos[check.kingPos]='';
+          }
           for(let i=0;i<moves.length;i++){
             if(isProtected(moves[i],piece.split('-')[1]==='w'?'b':'w',boardPos)){
                 moves[i]='';
             }
           }
+          if(check.kingPos && check.kingCol){
+            //adding back the king to the board
+            boardPos[check.kingPos]=`k-${check.kingCol}`
+          }
         }
 
         //check for castling
         if(type=='k' && !check.kingPos){
-           checkCastling(moves,end,piece,boardPos);
+           checkCastling(moves,end,piece,boardPos,canShortCastle,canLongCastle);
         }
 
         //find legal moves during check 
         if(check.kingPos){
-          let moves2=kingBetweenMove(check);
-
-      
           if(type!=='k'){
+            let moves2=kingBetweenMove(check);
             for(let i=0;i<moves.length;i++){
               let valid=false;
               for(let j=0;j<moves2.length;j++){
@@ -87,7 +93,6 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
               }
             }
           }
-    
         }
 
         //after all the above condition, if this condition prevails true then the piece can legally move

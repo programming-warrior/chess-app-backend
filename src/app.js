@@ -218,7 +218,7 @@ websocket.on('request',(request)=>{
                     rooms[roomId]["boardPos"]={...initialPos};
                     rooms[roomId]['check']={
                         kingPos:'',
-                        kingSqr:"",
+                        kingCol:"",
                         attackingPos:[],
                         attackingPiece:[],
                     }
