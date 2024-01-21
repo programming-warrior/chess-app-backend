@@ -19,7 +19,7 @@ async function connect(cb){
   }
 
   catch(e){
-    console.log(e+'db not connected');
+    console.log(e);
     process.exit(0);
   }
 }

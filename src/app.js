@@ -16,18 +16,18 @@ connect((db) => {
         next();
     })
 
-    const validateMove = require('./controllers/chess_logic/validateMove');
     const userRoutes = require('./routes/userRoutes');
-
-
+    
     app.use(cors({
-        origin: '*'
+        origin: 'http://localhost:3000',
     }))
-
+    
+    app.use(express.json());
+    app.use(express.urlencoded({extended:true}));
+    
     app.use('/api', userRoutes);
-
-
-
+    
+    const validateMove = require('./controllers/chess_logic/validateMove');
     let connections = {};
     let rooms = {};
     //rooms data structure example
