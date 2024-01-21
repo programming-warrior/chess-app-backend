@@ -1,3 +1,4 @@
+const isProtected=require('./isProtected');
 module.exports=function checkCastling(moves,end,piece,boardPos,canShortCastle,canLongCastle){
     
     let col=piece.split('-')[1];
