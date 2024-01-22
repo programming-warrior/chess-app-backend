@@ -1,11 +1,12 @@
 const express = require('express');
+const jwt=require('jsonwebtoken');
 const router = express.Router();
-const playerSchema = require('../models/playerSchema');
-
+const {createToken}=require('../controllers/token/token');
 
 router.post('/checkEmail', (req, res) => {
 
 })
+
 
 router.post('/register', (req, res) => {
     const email = req.body.email;
@@ -18,11 +19,17 @@ router.post('/register', (req, res) => {
 
     playerCollection.insertOne(player)
     .then((result) => {
-        res.status(201).json(result);
+        const payload={
+            id:result._id,
+            username,
+        }
+        const token=createToken(payload);
+        res.status(201).json({
+            token,
+        });
     })
     .catch(err => {
-        res.status(500);
-        res.end();
+        res.status(500).end();
     })
 })
 
@@ -37,7 +44,14 @@ router.post('/login', (req, res) => {
                 return;
             }
             if(password===result.password){
-                res.status(201).json(result);
+                const payload={
+                    id:result._id,
+                    username:result.username,
+                }
+                const token=createToken(payload);
+                res.status(201).json({
+                    token,
+                });
             }
             else{
                 res.status(401).end();
