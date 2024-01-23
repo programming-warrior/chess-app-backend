@@ -18,12 +18,12 @@ router.post('/register', (req, res) => {
     const player = { email, password, username };
 
     playerCollection.insertOne(player)
-    .then((result) => {
+    .then(async(result) => {
         const payload={
             id:result._id,
             username,
         }
-        const token=createToken(payload);
+        const token=await createToken(payload);
         res.status(201).json({
             token,
         });
@@ -36,9 +36,8 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res) => {
     const password=req.body.password;
     const baseCond=req.body.username ?req.body.username: req.body.email;
-    console.log(baseCond);
     if(baseCond){
-        req.db.collection('players').findOne({$or:[{username:baseCond},{email:baseCond}]}).then((result)=>{
+        req.db.collection('players').findOne({$or:[{username:baseCond},{email:baseCond}]}).then(async(result)=>{
             if(!result){
                 res.status(404).end();
                 return;
@@ -48,7 +47,7 @@ router.post('/login', (req, res) => {
                     id:result._id,
                     username:result.username,
                 }
-                const token=createToken(payload);
+                const token=await createToken(payload);
                 res.status(201).json({
                     token,
                 });

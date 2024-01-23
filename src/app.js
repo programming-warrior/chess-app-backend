@@ -9,6 +9,8 @@ const cors = require('cors');
 const app = express();
 const expressWs = require('express-ws')(app);
 const { connect } = require('./controllers/db/connection');
+const {verifyToken,verifyTokenSocket}=require('./controllers/token/token');
+const generateRoomId=require('./controllers/generateRandomId');
 
 connect((db) => {
     app.use((req,res,next)=>{
@@ -138,12 +140,32 @@ connect((db) => {
         return result;
     }
 
+    app.get('/initializeRoom',verifyToken,(req,res)=>{
+        const roomId=generateRoomId();
+        //initialize the room
+        rooms[roomId]='';
+        rooms[roomId] = {};
+        rooms[roomId]["players"] = {};
+        rooms[roomId]["boardPos"] = { ...initialPos };
+        rooms[roomId]['check'] = {
+            kingPos: '',
+            kingCol: "",
+            attackingPos: [],
+            attackingPiece: [],
+        }
+        rooms[roomId]['canShortCastle'] = ['w', 'b'];
+        rooms[roomId]['canLongCastle'] = ['w', 'b'];
+        rooms[roomId]['currentPlayer'] = 'w';
+        res.status(201).json({
+            roomId,
+        })
+    })
 
-
-    app.ws('/', (con, request) => {
+    app.ws('/', verifyTokenSocket,(con, request) => {
 
         // con = request.accept(null, 'http://localhost:3000');
-
+ 
+        console.log('hey inside');
         const clientId = generateUniqueId();
         let roomId;
 
@@ -151,11 +173,14 @@ connect((db) => {
             connections[clientId] = con;
         }
 
-        connections[clientId].on('message', (data) => {
+        connections[clientId].on('message',(data) => {
             const { event, message } = JSON.parse(data);
 
             if (event === "join-room") {
-                roomId = message;
+                roomId = message.roomId;
+                if(!rooms.hasOwnProperty(roomId)){
+                    return connections[clientId].send(JSON.stringify({event:"invalid-roomId",message:""}));
+                }
                 if (rooms.hasOwnProperty(roomId) && rooms[roomId].hasOwnProperty('players') && Object.keys(rooms[roomId]['players']).length >= 2) {
 
                     connections[clientId].send(JSON.stringify({ event: "room-full", message: "room is full" }));
@@ -169,22 +194,6 @@ connect((db) => {
                         get turn() {
                             return this.col == 'w' ? 1 : 0;
                         }
-                    }
-
-                    if (!rooms[roomId]) {
-                        //if one of the player has joined the room then initialize the room
-                        rooms[roomId] = {};
-                        rooms[roomId]["players"] = {};
-                        rooms[roomId]["boardPos"] = { ...initialPos };
-                        rooms[roomId]['check'] = {
-                            kingPos: '',
-                            kingCol: "",
-                            attackingPos: [],
-                            attackingPiece: [],
-                        }
-                        rooms[roomId]['canShortCastle'] = ['w', 'b'];
-                        rooms[roomId]['canLongCastle'] = ['w', 'b'];
-                        rooms[roomId]['currentPlayer'] = 'w';
                     }
 
                     rooms[roomId]['players'][clientId] = playerData;
@@ -234,8 +243,8 @@ connect((db) => {
             delete connections[clientId];
         })
 
+        console.log(Object.keys(connections).length);
     })
-
 
 
     app.listen(PORT, () => {
