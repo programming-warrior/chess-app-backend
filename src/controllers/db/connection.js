@@ -11,7 +11,7 @@ const client = new MongoClient(process.env.DB_HOST, {
 
 
 async function connect(cb){
-  console.log('connection');
+
   try{
     await client.connect();
     const db=client.db('chess');

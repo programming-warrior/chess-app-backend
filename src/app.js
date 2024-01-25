@@ -165,14 +165,12 @@ connect((db) => {
 
         // con = request.accept(null, 'http://localhost:3000');
  
-        console.log('hey inside');
         const clientId = generateUniqueId();
         let roomId;
 
         if (!connections.hasOwnProperty(clientId)) {
             connections[clientId] = con;
         }
-
         connections[clientId].on('message',(data) => {
             const { event, message } = JSON.parse(data);
 
@@ -229,6 +227,7 @@ connect((db) => {
 
             }
         })
+        console.log(rooms);
 
         connections[clientId].on('close', () => {
             //delete the clientId from the room 
@@ -243,7 +242,6 @@ connect((db) => {
             delete connections[clientId];
         })
 
-        console.log(Object.keys(connections).length);
     })
 
 
