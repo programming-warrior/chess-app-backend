@@ -1,7 +1,6 @@
 // const http = require("http");
 // const httpServer = http.createServer(app);
 // const webSocketServer = require('websocket').server;
-console.log('hello');
 const PORT = 7000;
 require('dotenv').config();
 const express = require('express');
@@ -9,26 +8,27 @@ const cors = require('cors');
 const app = express();
 const expressWs = require('express-ws')(app);
 const { connect } = require('./controllers/db/connection');
-const {verifyToken,verifyTokenSocket}=require('./controllers/token/token');
-const generateRoomId=require('./controllers/generateRandomId');
+const { verifyToken, verifyTokenSocket } = require('./controllers/token/token');
+const generateRoomId = require('./controllers/generateRandomId');
 
 connect((db) => {
-    app.use((req,res,next)=>{
-        req.db=db;
+    console.log('connected');
+    app.use((req, res, next) => {
+        req.db = db;
         next();
     })
 
     const userRoutes = require('./routes/userRoutes');
-    
+
     app.use(cors({
         origin: 'http://localhost:3000',
     }))
-    
+
     app.use(express.json());
-    app.use(express.urlencoded({extended:true}));
-    
+    app.use(express.urlencoded({ extended: true }));
+
     app.use('/api', userRoutes);
-    
+
     const validateMove = require('./controllers/chess_logic/validateMove');
     let connections = {};
     let rooms = {};
@@ -140,10 +140,9 @@ connect((db) => {
         return result;
     }
 
-    app.get('/initializeRoom',verifyToken,(req,res)=>{
-        const roomId=generateRoomId();
+    app.get('/initializeRoom', verifyToken, (req, res) => {
+        const roomId = generateRoomId();
         //initialize the room
-        rooms[roomId]='';
         rooms[roomId] = {};
         rooms[roomId]["players"] = {};
         rooms[roomId]["boardPos"] = { ...initialPos };
@@ -161,53 +160,90 @@ connect((db) => {
         })
     })
 
-    app.ws('/', verifyTokenSocket,(con, request) => {
-
+    app.ws('/', verifyTokenSocket, (con, request) => {
         // con = request.accept(null, 'http://localhost:3000');
- 
-        const clientId = generateUniqueId();
+        let clientId = request.username;
         let roomId;
 
         if (!connections.hasOwnProperty(clientId)) {
             connections[clientId] = con;
         }
-        connections[clientId].on('message',(data) => {
+
+
+        
+
+        con.on('message', (data) => {
             const { event, message } = JSON.parse(data);
+            if (event === 'reestablish-connection') {
+
+                console.log('reestablish connection');
+                console.log(rooms);
+
+                const { username } = message;
+                //check if this username exists in any room
+                for (id in rooms) {
+                    if (rooms[id].players.hasOwnProperty(username)) {
+                        //player was in a game 
+                        clientId=username;
+                        connections[username] = con;
+                        const data = {
+                            event: "join-previous-game",
+                            message: {
+                                roomId: id,
+                            }
+                        }
+                        return con.send(JSON.stringify(data));
+                    }
+                }
+                //check if this username is in connection object
+                if (connections.hasOwnProperty(username)) {
+                    clientId=username;
+                    connections[username] = con;
+                    const data = {
+                        event: "connection-reestablished",
+                        message: {}
+                    }
+                    return con.send(JSON.stringify(data));
+                }
+            }
 
             if (event === "join-room") {
+                console.log('join-room');
+                console.log(rooms);
                 roomId = message.roomId;
-                if(!rooms.hasOwnProperty(roomId)){
-                    return connections[clientId].send(JSON.stringify({event:"invalid-roomId",message:""}));
+                if (!rooms.hasOwnProperty(roomId)) {
+                    return connections[clientId]?.send(JSON.stringify({ event: "invalid-roomId", message: "" }));
+                }
+                if (rooms[roomId]['players'].hasOwnProperty(clientId)) {
+                    console.log('game-start event sent');
+                    return connections[clientId]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { col: rooms[roomId]['players'][clientId]['col'] }, boardPos: rooms[roomId]["boardPos"] }) }))
                 }
                 if (rooms.hasOwnProperty(roomId) && rooms[roomId].hasOwnProperty('players') && Object.keys(rooms[roomId]['players']).length >= 2) {
 
-                    connections[clientId].send(JSON.stringify({ event: "room-full", message: "room is full" }));
+                    return connections[clientId]?.send(JSON.stringify({ event: "room-full", message: "room is full" }));
                 }
-                else {
-
-                    const col = ['w', 'b'];
-                    let playerData = {
-                        clientId,
-                        col: col[Math.floor(Math.random() * col.length)],
-                        get turn() {
-                            return this.col == 'w' ? 1 : 0;
-                        }
+                const col = ['w', 'b'];
+                let playerData = {
+                    clientId,
+                    col: col[Math.floor(Math.random() * col.length)],
+                    get turn() {
+                        return this.col == 'w' ? 1 : 0;
                     }
+                }
 
-                    rooms[roomId]['players'][clientId] = playerData;
+                rooms[roomId]['players'][clientId] = playerData;
 
-                    //check for if the players have gotten the same color
-                    const clientInRoomId = Object.entries(rooms[roomId]['players']);
+                //check for if the players have gotten the same color
+                const clientInRoomId = Object.entries(rooms[roomId]['players']);
 
-                    if (clientInRoomId.length > 1 && clientInRoomId[0][1].col === playerData.col) {
-                        playerData.col = playerData.col === 'w' ? 'b' : 'w';
-                    }
+                if (clientInRoomId.length > 1 && clientInRoomId[0][1].col === playerData.col) {
+                    playerData.col = playerData.col === 'w' ? 'b' : 'w';
+                }
 
-                    //if both the players have entered the room start the game
-                    if (clientInRoomId.length == 2) {
-                        connections[clientInRoomId[0][0]].send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...clientInRoomId[0][1] }, boardPos: rooms[roomId]["boardPos"] }) }));
-                        connections[clientInRoomId[1][0]].send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...clientInRoomId[1][1] }, boardPos: rooms[roomId]["boardPos"] }) }));
-                    }
+                //if both the players have entered the room start the game
+                if (clientInRoomId.length == 2) {
+                    connections[clientInRoomId[0][0]]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...clientInRoomId[0][1] }, boardPos: rooms[roomId]["boardPos"] }) }));
+                    connections[clientInRoomId[1][0]]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...clientInRoomId[1][1] }, boardPos: rooms[roomId]["boardPos"] }) }));
                 }
             }
 
@@ -220,28 +256,35 @@ connect((db) => {
                 if (sender === currentPlayer) {
                     if (validateMove(startingPosition, movedPosition, piece, rooms[roomId])) {
                         rooms[roomId]['currentPlayer'] = rooms[roomId]['currentPlayer'] === 'w' ? 'b' : 'w';
-                        connections[clientInRoomId[0][0]].send(JSON.stringify({ event: "move-validated", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], currentPlayer: rooms[roomId]['currentPlayer'] } }));
-                        connections[clientInRoomId[1][0]].send(JSON.stringify({ event: "move-validated", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], currentPlayer: rooms[roomId]['currentPlayer'] } }));
+                        connections[clientInRoomId[0][0]]?.send(JSON.stringify({ event: "move-validated", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], currentPlayer: rooms[roomId]['currentPlayer'] } }));
+                        connections[clientInRoomId[1][0]]?.send(JSON.stringify({ event: "move-validated", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], currentPlayer: rooms[roomId]['currentPlayer'] } }));
                     }
                 }
 
             }
         })
-        console.log(rooms);
 
         connections[clientId].on('close', () => {
-            //delete the clientId from the room 
-            if (rooms[roomId]) {
-                delete rooms[roomId]['players'][clientId];
-            }
+            // //delete the clientId from the room 
+            // if (rooms[roomId]) {
+            //     delete rooms[roomId]['players'][clientId];
+            // }
 
             if (rooms[roomId] && Object.keys(rooms[roomId]['players']).length === 0) {
                 delete rooms[roomId];
             }
             //delete the client from the connections
-            delete connections[clientId];
+            connections[clientId] = null;
+            console.log(clientId+"closing");
+            console.log(connections);
+            console.log(rooms);
         })
 
+
+
+        console.log('new connection');
+        console.log(connections);
+        console.log(rooms);
     })
 
 
@@ -250,7 +293,7 @@ connect((db) => {
     })
 })
 
-console.log('after calling the connect');
+
 
 
 

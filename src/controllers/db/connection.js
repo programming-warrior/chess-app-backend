@@ -1,6 +1,5 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
-console.log('db');
 const client = new MongoClient(process.env.DB_HOST, {
   serverApi: {
     version: ServerApiVersion.v1,

@@ -9,17 +9,32 @@ const createToken=(payload)=>{
 const verifyTokenSocket=async(con,req,next)=>{
     const token=req.rawHeaders[21].split(':')[1];
     if(!token){
-        console.log(token);
-        await con.close();
+        const data={
+            event:"invalid-token",
+        }
+
+        con.send(JSON.stringify(data));
        return ;
     }
     try{
         const decoded=await jwt.verify(token,process.env.SECRET_KEY);
         req.userId=decoded.id;
+        req.username=decoded.username;
+
+        const data={
+            event:"valid-token",
+            message:JSON.stringify({
+                username:decoded.username,
+            })
+        }
+        con.send(JSON.stringify(data));
         next();
     }
     catch(e){
-         con.close();
+        const data={
+            event:"invalid-token",
+        }
+         con.send(JSON.stringify(data));
          return;
     }
 }
@@ -32,7 +47,6 @@ const verifyToken=async(req,res,next)=>{
     }
     try{
         const decoded=await jwt.verify(token,process.env.SECRET_KEY);
-        req.userId=decoded.id;
         next();
     }
     catch(e){
