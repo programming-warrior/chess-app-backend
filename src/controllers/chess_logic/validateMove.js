@@ -9,6 +9,9 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
 
 
     let isPinned=false;
+    let shortCastle=false;
+    let longCastle=false;
+
     if(piece.split('-')[1]===currentPlayer){
         const type = piece.split("-")[0];
         if(type!=='k' && check.kingPos && check.attackingPiece && check.attackingPiece.length>1){
@@ -73,8 +76,13 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
         }
 
         //check for castling
-        if(type=='k' && !check.kingPos){
-           checkCastling(moves,end,piece,boardPos,canShortCastle,canLongCastle);
+        if(type=='k' && !check.kingPos ){
+          if(piece.split('-')[1]==='w' && boardPos['e1']==='k-w' && (end==='c1' || end==='g1')){
+            return checkCastling(end,piece,boardPos,canShortCastle,canLongCastle);
+          }
+          if(piece.split('-')[1]==='b' && boardPos['e8']==='k-b' && (end==='c8' || end==='g8')){
+            return checkCastling(end,piece,boardPos,canShortCastle,canLongCastle);
+          }
         }
 
         //find legal moves during check 

@@ -216,7 +216,7 @@ connect((db) => {
                 }
                 if (rooms[roomId]['players'].hasOwnProperty(clientId)) {
                     console.log('game-start event sent');
-                    return connections[clientId]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { col: rooms[roomId]['players'][clientId]['col'] }, boardPos: rooms[roomId]["boardPos"] }) }))
+                    return connections[clientId]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...rooms[roomId]['players'][clientId]}, boardPos: rooms[roomId]["boardPos"] }) }))
                 }
                 if (rooms.hasOwnProperty(roomId) && rooms[roomId].hasOwnProperty('players') && Object.keys(rooms[roomId]['players']).length >= 2) {
 
@@ -265,17 +265,18 @@ connect((db) => {
         })
 
         connections[clientId].on('close', () => {
-            // //delete the clientId from the room 
-            // if (rooms[roomId]) {
-            //     delete rooms[roomId]['players'][clientId];
-            // }
 
-            if (rooms[roomId] && Object.keys(rooms[roomId]['players']).length === 0) {
+            //delete the client from the connection
+            connections[clientId] = null;
+
+            //if the players have logged out then remove the room
+            const playerIds=Object.keys(rooms[roomId]['players']);
+
+            console.log(playerIds);
+            if(!connections[playerIds[0]] && !connections[playerIds[1]]){
                 delete rooms[roomId];
             }
-            //delete the client from the connections
-            connections[clientId] = null;
-            console.log(clientId+"closing");
+
             console.log(connections);
             console.log(rooms);
         })
