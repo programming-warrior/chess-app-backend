@@ -4,13 +4,12 @@ const kingBetweenMove=require('./kingBetweenMove');
 const isProtected=require('./isProtected');
 const checkCastling=require('./checkCastling');
 const checkforPin=require('./checkforPin');
+const checkMateDetection=require('./checkMateDetection');
 
-const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canShortCastle,canLongCastle})=>{
+const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canShortCastle,canLongCastle,checkMate})=>{
 
 
     let isPinned=false;
-    let shortCastle=false;
-    let longCastle=false;
 
     if(piece.split('-')[1]===currentPlayer){
         const type = piece.split("-")[0];
@@ -149,6 +148,14 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
           }
 
           checkDetection(start,end,piece,check,boardPos);
+
+          if(check.kingPos && check.kingCol){
+            if(checkMateDetection(check,boardPos)){
+              console.log('checkmate');
+              checkMate.status=true;
+            }
+          }
+   
           return true;
         }
         else{

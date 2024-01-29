@@ -2,7 +2,7 @@ const getMoves=require('./getMoves');
 
 module.exports=function isProtected(square,pieceCol,boardPos){
     for(let key in boardPos){
-      if(boardPos[key].split('-')[1]===pieceCol){
+      if(boardPos[key] && boardPos[key].split('-')[1]===pieceCol){
           let moves=[];
 
           let type=boardPos[key].split('-')[0];
