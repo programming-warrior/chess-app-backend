@@ -7,11 +7,12 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const expressWs = require('express-ws')(app);
-const url=require('url');
+const url = require('url');
 const { connect } = require('./controllers/db/connection');
+const storeGame = require('./controllers/db/storeGame');
 const { verifyToken, verifyTokenSocket } = require('./controllers/token/token');
 const generateRoomId = require('./controllers/generateRandomId');
-const {startClock,stopClock}=require('./controllers/clockLogic');
+const { startClock, stopClock } = require('./controllers/clockLogic');
 
 connect((db) => {
     console.log('connected');
@@ -60,7 +61,9 @@ connect((db) => {
             b1: 'kn-w',
             c1: 'b-w',
             ...
-        }
+        },
+        bMoves:[],
+        wMoves:[],
     }
     
     */
@@ -149,8 +152,8 @@ connect((db) => {
     app.get('/initializeRoom', verifyToken, (req, res) => {
         const parsedUrl = url.parse(req.url, true);
         const query = parsedUrl.query;
-        const gameType=query['type'];
-        if(['rapid','blitz','bullet'].indexOf(gameType)<=-1){
+        const gameType = query['type'];
+        if (['rapid', 'blitz', 'bullet'].indexOf(gameType) <= -1) {
             return res.status(401).end();
         }
         const roomId = generateRoomId();
@@ -167,14 +170,18 @@ connect((db) => {
         rooms[roomId]['canShortCastle'] = ['w', 'b'];
         rooms[roomId]['canLongCastle'] = ['w', 'b'];
         rooms[roomId]['currentPlayer'] = 'w';
-        rooms[roomId]['checkMate']={
-            status:false,
+        rooms[roomId]['checkMate'] = {
+            status: false,
         };
-        rooms[roomId]['type']=gameType;
+        rooms[roomId]['type'] = gameType;
+        rooms[roomId]['b'] = [];
+        rooms[roomId]['w'] = [];
+
         res.status(201).json({
             roomId,
         })
     })
+
 
     app.ws('/', verifyTokenSocket, (con, request) => {
         // con = request.accept(null, 'http://localhost:3000');
@@ -185,14 +192,9 @@ connect((db) => {
             connections[clientId] = con;
         }
 
-
-
-
         con.on('message', (data) => {
             const { event, message } = JSON.parse(data);
             if (event === 'reestablish-connection') {
-
-
 
                 const { username } = message;
                 //check if this username exists in any room
@@ -222,15 +224,15 @@ connect((db) => {
                 }
             }
 
-            if(event==='game-started'){
-                if(!rooms[roomId]['clock']){
+            if (event === 'game-started') {
+                if (!rooms[roomId]['clock']) {
                     console.log('game-started received');
-                    startClock(connections,rooms[roomId]);
+                    startClock(connections, rooms[roomId]);
                 }
             }
 
             if (event === "join-room") {
-     
+
                 roomId = message.roomId;
                 if (!rooms.hasOwnProperty(roomId)) {
                     return connections[clientId]?.send(JSON.stringify({ event: "invalid-roomId", message: "" }));
@@ -239,7 +241,7 @@ connect((db) => {
                     return connections[clientId]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...rooms[roomId]['players'][clientId] }, boardPos: rooms[roomId]["boardPos"] }) }))
                 }
                 if (rooms.hasOwnProperty(roomId) && rooms[roomId].hasOwnProperty('players') && Object.keys(rooms[roomId]['players']).length >= 2) {
-                    return connections[clientId]?.send(JSON.stringify({ event: "room-full", message: "room is full" }));
+                    return connections[clientId]?.send(JSON.stringify({ event: "room-full", message: {} }));
                 }
                 const col = ['w', 'b'];
                 let playerData = {
@@ -261,23 +263,23 @@ connect((db) => {
 
                 //if both the players have entered the room start the game
                 if (clientInRoomId.length == 2) {
-                    let timeControl=3*100;
-                    if(rooms[roomId]['type']==='rapid'){
-                        timeControl=10*60*100;
+                    let timeControl = 3 * 100;
+                    if (rooms[roomId]['type'] === 'rapid') {
+                        timeControl = 10 * 60 * 100;
                     }
-                    else if(rooms[roomId]['type']==='blitz'){
-                        timeControl=3*60*100;
+                    else if (rooms[roomId]['type'] === 'blitz') {
+                        timeControl = 3 * 60 * 100;
                     }
-                    else if(rooms[roomId]['type']==='bullet'){
-                        timeControl=1*60*100;
+                    else if (rooms[roomId]['type'] === 'bullet') {
+                        timeControl = 1 * 60 * 100;
                     }
                     //set the time control
-                    rooms[roomId]['players'][clientInRoomId[1][0]]['time']=timeControl;
-                    rooms[roomId]['players'][clientInRoomId[0][0]]['time']=timeControl;
+                    rooms[roomId]['players'][clientInRoomId[1][0]]['time'] = timeControl;
+                    rooms[roomId]['players'][clientInRoomId[0][0]]['time'] = timeControl;
 
-                    
-                    connections[clientInRoomId[0][0]]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...clientInRoomId[0][1] }, boardPos: rooms[roomId]["boardPos"] }) }));
-                    connections[clientInRoomId[1][0]]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...clientInRoomId[1][1] }, boardPos: rooms[roomId]["boardPos"] }) }));
+
+                    connections[clientInRoomId[1][0]]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...clientInRoomId[1][1] }, boardPos: rooms[roomId]["boardPos"], clock: { w: clientInRoomId[1][1]['time'], b: clientInRoomId[1][1]['time'] } }) }));
+                    connections[clientInRoomId[0][0]]?.send(JSON.stringify({ event: "game-start", message: JSON.stringify({ player: { ...clientInRoomId[0][1] }, boardPos: rooms[roomId]["boardPos"], clock: { w: clientInRoomId[1][1]['time'], b: clientInRoomId[1][1]['time'] } }) }));
                     console.log('game-start event sent');
                 }
             }
@@ -290,10 +292,39 @@ connect((db) => {
 
                 if (sender === currentPlayer) {
                     if (validateMove(startingPosition, movedPosition, piece, rooms[roomId])) {
-                        if(rooms[roomId]['checkMate']['status']){
-                            connections[clientInRoomId[0][0]]?.send(JSON.stringify({ event: "checkmate", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], winner:currentPlayer} }));
-                            connections[clientInRoomId[1][0]]?.send(JSON.stringify({ event: "checkmate", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], winner:currentPlayer }}));
+                        rooms[roomId][rooms[roomId]['currentPlayer']].push(`${piece}=${movedPosition}`);
+                        if (rooms[roomId]['checkMate']['status']) {
+                            console.log('checkmate');
                             stopClock(rooms[roomId]);
+
+                            //save the game into the database
+                            const blackPlayerId = Object.keys(rooms[roomId]['players']).find((e) => {
+                                if (rooms[roomId]['players'][e]['col'] === 'b') {
+                                    return true;
+                                }
+                            })
+                            const whitePlayerId = Object.keys(rooms[roomId]['players']).find((e) => {
+                                if (rooms[roomId]['players'][e]['col'] === 'w') {
+                                    return true;
+                                }
+                            })
+                            const gameState = {
+                                gameId: roomId,
+                                boardPos: rooms[roomId]['boardPos'],
+                                b: {
+                                    moves: [...rooms[roomId]['b']],
+                                    playerId: blackPlayerId,
+                                },
+                                w: {
+                                    moves: [...rooms[roomId]['w']],
+                                    playerId: whitePlayerId
+                                },
+                                winner: rooms[roomId]['currentPlayer']
+                            }
+                            storeGame(request.db.collection('games'), gameState);
+                            connections[clientInRoomId[0][0]]?.send(JSON.stringify({ event: "checkmate", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], winner: currentPlayer } }));
+                            connections[clientInRoomId[1][0]]?.send(JSON.stringify({ event: "checkmate", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], winner: currentPlayer } }));
+                            delete rooms[roomId];
                             return;
                         }
 
@@ -310,7 +341,7 @@ connect((db) => {
 
             //delete the client from the connection
             connections[clientId] = null;
-            console.log(clientId+" closing");
+            console.log(clientId + " closing");
             //if the players have logged out then remove the room
             if (roomId && rooms[roomId]) {
                 const playerIds = Object.keys(rooms[roomId]['players']);
@@ -319,9 +350,9 @@ connect((db) => {
                     stopClock(rooms[roomId]);
                     delete rooms[roomId];
                 }
-                console.log(rooms[roomId]);
             }
-
+            console.log(Object.keys(rooms));
+            console.log(Object.keys(connections));
         })
 
     })

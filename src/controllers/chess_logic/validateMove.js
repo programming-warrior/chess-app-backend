@@ -141,7 +141,7 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
 
           boardPos[end]=boardPos[start];
           boardPos[start]='';
-        
+          
 
           for(let key in players){
             players[key]['turn']=!players[key]['turn'];
@@ -150,6 +150,7 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
           checkDetection(start,end,piece,check,boardPos);
 
           if(check.kingPos && check.kingCol){
+            console.log('check')
             if(checkMateDetection(check,boardPos)){
               console.log('checkmate');
               checkMate.status=true;

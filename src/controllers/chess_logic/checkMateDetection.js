@@ -98,7 +98,6 @@ const checkMateDetection = (check, boardPos) => {
             if(legalMoves.length>0){
                 return false;
             }
-            console.log(moves);
         }
     }
     console.log(legalMoves);
