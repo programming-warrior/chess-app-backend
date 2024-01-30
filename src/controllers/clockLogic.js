@@ -1,13 +1,14 @@
 
 
 function startClock(connections,room){
+    console.log('start clock function called');
     const clientIds=Object.keys(room['players']);
     const interval=setInterval(()=>{
         let data;
         clientIds.forEach((clientId)=>{
 
             if(room['currentPlayer']===room['players'][clientId]['col'] && room['players'][clientId]['time']>0  ){
-                room['players'][clientId]['time']-=(1);
+                room['players'][clientId]['time']-=(100);
                  data={
                     event:"tick",
                     message:{
@@ -16,7 +17,8 @@ function startClock(connections,room){
                     }
                 }
             }
-            if(room['players'][clientId]['time']<=0){
+            if(room['players'][clientId]['time']===0){
+
                 data['event']='time-out';
                 data['winner']=room['players'][clientId]['col']==='w'?'b':'w';
                 clearInterval(interval);
@@ -32,8 +34,10 @@ function startClock(connections,room){
 }
 
 function stopClock(room){
-    if(room['clock'])
+    if(room['clock']){
+        console.log('stopclock function called');
         clearInterval(room['clock']);
+    }
 }
 
 module.exports={
