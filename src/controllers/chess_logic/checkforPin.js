@@ -4,9 +4,9 @@ module.exports=function checkforPin(start,piece,kingSqr,boardPos){
 
 
     for(let key in boardPos){
-      if(boardPos[key].split('-')[1]!==col){
+      if(boardPos[key].split('-')[1]!==col && (boardPos[key].split('-')[0]==='b' || boardPos[key].split('-')[0]==='q' || boardPos[key].split('-')[0]==='r')){
         const moves=[];
-        let othCond=true;
+        let otherPieceInBetween=false;
         if(boardPos[key].split('-')[0]==='q'){
 
           let rankDiff=parseInt(kingSqr.split('')[1])-parseInt(key.split('')[1]);
@@ -20,14 +20,15 @@ module.exports=function checkforPin(start,piece,kingSqr,boardPos){
             let temp=key;
   
             while(temp!==kingSqr && Object.hasOwn(boardPos,temp) ){
+              moves.push(temp);
+              if(temp!==start && temp!==key && boardPos[temp]!=''){
+                otherPieceInBetween=true;
+              }
               let file=String.fromCharCode(temp.split('')[0].charCodeAt(0)+fileIncr);
               let rank=(parseInt(temp.split('')[1])+rankIncr).toString();
               let sqr=file+rank;
               temp=sqr;
-              if(temp!==start && temp!==kingSqr && boardPos[temp]!=''){
-                othCond=false;
-              }
-              moves.push(temp);
+         
             }
           }
           //move like the rook
@@ -40,47 +41,54 @@ module.exports=function checkforPin(start,piece,kingSqr,boardPos){
               let fileIncr=kingSqr.split('')[0].charCodeAt(0)-key.split('')[0].charCodeAt(0)>0?1:-1;
               let temp=key;
               while(temp!==kingSqr && Object.hasOwn(boardPos,temp) ){
+                moves.push(temp);
+                if(temp!==start && temp!==key && boardPos[temp]!=''){
+                  otherPieceInBetween=true;
+                }
                 let file=String.fromCharCode(temp.split('')[0].charCodeAt(0)+fileIncr);
                 let rank=temp.split('')[1];
                 let sqr=file+rank;
                 temp=sqr;
-                if(temp!==start && temp!==kingSqr && boardPos[temp]!=''){
-                  othCond=false;
-                }
-                moves.push(temp);
+
               }
             }
             else if(fileDiff===0){
               let rankIncr=(parseInt(kingSqr.split('')[1])-parseInt(key.split('')[1]))>0?1:-1;
               let temp=key;
               while(temp!==kingSqr && Object.hasOwn(boardPos,temp) ){
+                moves.push(temp);
+                if(temp!==start && temp!==key && boardPos[temp]!=''){
+                  otherPieceInBetween=true;
+                }
                 let file=temp.split('')[0];
                 let rank=(parseInt(temp.split('')[1])+rankIncr).toString();
                 let sqr=file+rank;
                 temp=sqr;
-                if(temp!==start && temp!==kingSqr && boardPos[temp]!=''){
-                  othCond=false;
-                }
-                moves.push(temp);
+             
               }
             }
           }
         }
         else if(boardPos[key].split('-')[0]==='b'){
+          let rankDiff=parseInt(kingSqr.split('')[1])-parseInt(key.split('')[1]);
+          let fileDiff=kingSqr.split('')[0].charCodeAt(0)-key.split('')[0].charCodeAt(0);
+          if(rankDiff===fileDiff || rankDiff===fileDiff*-1){
+
             let rankIncr=(parseInt(kingSqr.split('')[1])-parseInt(key.split('')[1]))>0?1:-1;
             let fileIncr=kingSqr.split('')[0].charCodeAt(0)-key.split('')[0].charCodeAt(0)>0?1:-1;
   
             let temp=key;
-            while(temp!==kingSqr && Object.hasOwn(boardPos,temp) ){
+            while(temp!==kingSqr && Object.hasOwn(boardPos,temp)){
+              moves.push(temp);
+              if(temp!==start && temp!==key && boardPos[temp]!=''){
+                otherPieceInBetween=true;
+              }
               let file=String.fromCharCode(temp.split('')[0].charCodeAt(0)+fileIncr);
               let rank=(parseInt(temp.split('')[1])+rankIncr).toString();
               let sqr=file+rank;
               temp=sqr;
-              if(temp!==start && temp!==kingSqr && boardPos[temp]!=''){
-                othCond=false;
-              }
-              moves.push(temp);
             }
+          }
         }
         else if(boardPos[key].split('-')[0]==='r'){
 
@@ -91,38 +99,43 @@ module.exports=function checkforPin(start,piece,kingSqr,boardPos){
             let fileIncr=kingSqr.split('')[0].charCodeAt(0)-key.split('')[0].charCodeAt(0)>0?1:-1;
             let temp=start;
             while(temp!==kingSqr && Object.hasOwn(boardPos,temp)){
+              moves.push(temp);
+              if(temp!==start && temp!==key && boardPos[temp]!=''){
+                otherPieceInBetween=true;
+              }
+
               let file=String.fromCharCode(temp.split('')[0].charCodeAt(0)+fileIncr);
               let rank=temp.split('')[1];
               let sqr=file+rank;
               temp=sqr;
-              if(temp!==start && temp!==kingSqr && boardPos[temp]!=''){
-                othCond=false;
-              }
-              moves.push(temp);
+          
             }
           }
           else if(fileDiff===0){
             let rankIncr=(parseInt(kingSqr.split('')[1])-parseInt(key.split('')[1]))>0?1:-1;
             let temp=key;
             while(temp!==kingSqr && Object.hasOwn(boardPos,temp)){
+              moves.push(temp);
+              if(temp!==start && temp!==key && boardPos[temp]!=''){
+                otherPieceInBetween=true;
+              }
               let file=temp.split('')[0];
               let rank=(parseInt(temp.split('')[1])+rankIncr).toString();
               let sqr=file+rank;
               temp=sqr;
-              if(temp!==start && temp!==kingSqr && boardPos[temp]!=''){
-                othCond=false;
-              }
-              moves.push(temp);
             }
           }
         }
 
-  
-        if(moves.indexOf(start)>-1 && othCond){
-          return true;
+     
+        console.log(start);
+        if(moves.indexOf(start)>-1 && !otherPieceInBetween){
+          console.log(moves);
+          console.log(otherPieceInBetween);
+          return moves;
         }
 
       }
     }
-    return false;
+    return [];
 }

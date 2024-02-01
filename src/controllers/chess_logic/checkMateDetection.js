@@ -2,9 +2,9 @@ const getMoves = require('./getMoves');
 const kingBetweenMove = require('./kingBetweenMove');
 const isProtected = require('./isProtected');
 const checkforPin = require('./checkforPin');
-const legalMoves = [];
 
 const checkMateDetection = (check, boardPos) => {
+    const legalMoves = [];
     let kingSqr = '';
     for (let key in boardPos) {
         if (boardPos[key] === `k-${check.kingCol}`) {
@@ -62,16 +62,6 @@ const checkMateDetection = (check, boardPos) => {
                     //adding back the king to the board
                     boardPos[check.kingPos] = `k-${check.kingCol}`
                 }
-  
-                for(let j=0;j<check.attackingPos.length;j++){
-                    //temporarily remove the attacking piece from board pos
-                    boardPos[check.attackingPos[j]]='';
-                    if(moves.indexOf(check.attackingPos[j])>-1 && isProtected(check.attackingPos[j],check.kingCol === 'w' ? 'b' : 'w',boardPos)){
-                        moves[moves.indexOf(check.attackingPos[j])]='';
-                    }
-                    //add back the attacking piece from board pos
-                    boardPos[check.attackingPos[j]]=check.attackingPiece[j];
-                }
             }
 
             if (type !== 'k') {
@@ -88,19 +78,16 @@ const checkMateDetection = (check, boardPos) => {
                     }
                 }
             }
-
             moves.forEach((m)=>{
                 if(m){
                     legalMoves.push(m);
                 }
             })
-
             if(legalMoves.length>0){
                 return false;
             }
         }
     }
-    console.log(legalMoves);
     if(legalMoves.length===0){
         return true;
     }

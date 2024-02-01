@@ -20,7 +20,7 @@ function startClock(connections,room){
             if(room['players'][clientId]['time']===0){
 
                 data['event']='time-out';
-                data['winner']=room['players'][clientId]['col']==='w'?'b':'w';
+                data['message']['winner']=room['players'][clientId]['col']==='w'?'b':'w';
                 clearInterval(interval);
                 connections[clientIds[0]]?.send(JSON.stringify(data));
                 connections[clientIds[1]]?.send(JSON.stringify(data));

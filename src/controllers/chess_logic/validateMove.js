@@ -53,7 +53,15 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
               }
             }
             if(kingSqr){
-              isPinned=checkforPin(start,piece,kingSqr,boardPos);
+              const allowedMoves=checkforPin(start,piece,kingSqr,boardPos);
+              console.log("allowedMoves");
+              console.log(allowedMoves);
+              if(allowedMoves.length>0){
+                console.log(allowedMoves);
+                moves=moves.filter((value)=>{
+                  return allowedMoves.includes(value);
+                })
+              }
             }
         }
 
@@ -102,8 +110,10 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
           }
         }
 
+ 
+
         //after all the above condition, if this condition prevails true then the piece can legally move
-        if(moves.indexOf(end)>-1 && boardPos[end].split('-')[1]!==piece.split('-')[1] && !isPinned){
+        if(moves.indexOf(end)>-1 && boardPos[end].split('-')[1]!==piece.split('-')[1]){
           if(type==='k'){
             //the king has successfully moved so set castle for that color king to false
     
@@ -150,7 +160,6 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
           checkDetection(start,end,piece,check,boardPos);
 
           if(check.kingPos && check.kingCol){
-            console.log('check')
             if(checkMateDetection(check,boardPos)){
               console.log('checkmate');
               checkMate.status=true;
