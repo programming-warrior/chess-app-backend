@@ -1,8 +1,13 @@
 
 const getMoves=require('./getMoves');
 
-function pawnCheckDetect(start,end,piece,check,boardPos){
+//algorithm
+//first find if any check because of the movement of the piece.
+//regardless whethere piece movement has caused check or not
+//we would remove that piece from the board to check for any discover check from bishop, rook, or queen
 
+function pawnCheckDetect(start,end,piece,check,boardPos){
+6
     const col = piece.split("-")[1];
     const type = piece.split("-")[0];
     let kingCol = "";
@@ -38,7 +43,7 @@ function pawnCheckDetect(start,end,piece,check,boardPos){
       for(let key in boardPos){
         if(boardPos[key]===`b-${col}`){
           bishopEnd=key;
-          moves=getMoves.bishop(bishopEnd,piece,boardPos);
+          moves=getMoves.bishop(bishopEnd,boardPos[key],boardPos);
           for(let i=0;i<moves.length;i++){
             if(boardPos[moves[i]]!=='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]!==piece.split('-')[1]){
                 attackingPos.push(bishopEnd);;
@@ -51,7 +56,7 @@ function pawnCheckDetect(start,end,piece,check,boardPos){
         }
         else if(boardPos[key]===`r-${col}`){
           rookEnd=key;
-          moves=getMoves.rook(rookEnd,piece,boardPos);
+          moves=getMoves.rook(rookEnd,boardPos[key],boardPos);
           for(let i=0;i<moves.length;i++){
             if(boardPos[moves[i]]!='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]!==piece.split('-')[1]){
                 attackingPos.push(rookEnd);;
@@ -64,7 +69,7 @@ function pawnCheckDetect(start,end,piece,check,boardPos){
         }
         else if(boardPos[key]===`q-${col}`){
           queenEnd=key;
-          moves=getMoves.queen(queenEnd,piece,boardPos);
+          moves=getMoves.queen(queenEnd,boardPos[key],boardPos);
           for(let i=0;i<moves.length;i++){
             if(boardPos[moves[i]]!=='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]!==piece.split('-')[1]){
                 attackingPos.push(queenEnd);;
@@ -80,8 +85,6 @@ function pawnCheckDetect(start,end,piece,check,boardPos){
     check['kingPos']=kingPos;
     check['attackingPiece']=attackingPiece;
     check['attackingPos']=attackingPos;   
-   
-
   }
   else{
     kingCol = "";
@@ -113,16 +116,18 @@ function rookCheckDetect(start,end,piece,check,boardPos){
           break;
         }
       }
-       //now check for any dobule check caused by the rook, bishop, and the queen.
+       //now check for any dobule check caused by the bishop, and the queen.
        let bishopEnd='';
        let queenEnd='';
+
+       
        for(let key in boardPos){
          if(boardPos[key]===`b-${col}`){
            bishopEnd=key;
-           moves=getMoves.bishop(bishopEnd,piece,boardPos);
+           moves=getMoves.bishop(bishopEnd,boardPos[key],boardPos);
            //check for the discover check by the bishop
            for(let i=0;i<moves.length;i++){
-             if(boardPos[moves[i]]!=='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]===check.kingCol){
+             if(boardPos[moves[i]]!=='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]!==piece.split('-')[1]){
                 kingPos=moves[i];
                 kingCol = col === "w" ? "b" : "w"
                 attackingPos.push(bishopEnd);
@@ -135,10 +140,10 @@ function rookCheckDetect(start,end,piece,check,boardPos){
     
          else if(boardPos[key]===`q-${col}`){
            queenEnd=key;
-           moves=getMoves.queen(queenEnd,piece,boardPos);
+           moves=getMoves.queen(queenEnd,boardPos[key],boardPos);
            //check for the check
            for(let i=0;i<moves.length;i++){
-             if(boardPos[moves[i]]!=='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]===kingCol){
+             if(boardPos[moves[i]]!=='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]!==piece.split('-')[1]){
                   kingPos=moves[i];
                   kingCol = col === "w" ? "b" : "w"
                   attackingPos.push(queenEnd);
@@ -195,7 +200,7 @@ function bishopCheckDetect(start,end,piece,check,boardPos){
         
           if(boardPos[key]===`r-${col}`){
             rookEnd=key;
-            moves=getMoves.rook(rookEnd,piece,boardPos);
+            moves=getMoves.rook(rookEnd,boardPos[key],boardPos);
             for(let i=0;i<moves.length;i++){
               if(boardPos[moves[i]]!='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]!==piece.split('-')[1]){
                   kingPos=moves[i];
@@ -209,7 +214,7 @@ function bishopCheckDetect(start,end,piece,check,boardPos){
           }
           else if(boardPos[key]===`q-${col}`){
             queenEnd=key;
-            moves=getMoves.queen(queenEnd,piece,boardPos);
+            moves=getMoves.queen(queenEnd,boardPos[key],boardPos);
             //check for the check
             for(let i=0;i<moves.length;i++){
               if(boardPos[moves[i]]!=='' && boardPos[moves[i]].split('-')[0]==='k' && boardPos[moves[i]].split('-')[1]!==piece.split('-')[1]){
@@ -268,7 +273,6 @@ function queenCheckDetect(start,end,piece,check,boardPos){
         }
       }
   } 
-
   else{
     kingCol = "";
     kingPos = "";

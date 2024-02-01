@@ -9,7 +9,6 @@ const checkMateDetection=require('./checkMateDetection');
 const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canShortCastle,canLongCastle,checkMate})=>{
 
 
-    let isPinned=false;
 
     if(piece.split('-')[1]===currentPlayer){
         const type = piece.split("-")[0];
@@ -156,6 +155,12 @@ const validateMove=(start, end, piece,{players,currentPlayer,boardPos,check,canS
           for(let key in players){
             players[key]['turn']=!players[key]['turn'];
           }
+
+          //remove previous checks if any
+          check['kingCol']='';
+          check['kingPos']='';
+          check['attackingPiece']=[];
+          check['attackingPos']=[];  
 
           checkDetection(start,end,piece,check,boardPos);
 
