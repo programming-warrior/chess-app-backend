@@ -2,13 +2,14 @@ const jwt=require('jsonwebtoken');
 
 const createToken=(payload)=>{
     const signature=process.env.SECRET_KEY;
-    return  jwt.sign(payload,signature);
+    return  jwt.sign(payload,signature,{expiresIn:"1h"});
 }
 
 //middleware
 const verifyTokenSocket=async(con,req,next)=>{
     const token=req.rawHeaders[21].split(':')[1];
     if(!token){
+        
         const data={
             event:"invalid-token",
         }
@@ -17,7 +18,7 @@ const verifyTokenSocket=async(con,req,next)=>{
        return ;
     }
     try{
-        const decoded=await jwt.verify(token,process.env.SECRET_KEY);
+        const decoded= jwt.verify(token,process.env.SECRET_KEY);
         req.userId=decoded.id;
         req.username=decoded.username;
 
@@ -42,17 +43,15 @@ const verifyTokenSocket=async(con,req,next)=>{
 const verifyToken=async(req,res,next)=>{
     const token=req.headers['authorization'].split(' ')[1];
     if(!token){
-        res.status(404).end();
-       return ;
+       return res.status(401).end();
     }
-    try{
-        const decoded=await jwt.verify(token,process.env.SECRET_KEY);
-        next();
+    jwt.verify(token,process.env.SECRET_KEY,(err,decodedValue)=>{
+    if(err){
+        return res.status(403).end();
     }
-    catch(e){
-        res.status(500).end();
-         return;
-    }
+    req.username=decodedValue.username;
+    next();
+    });
 }
 
 

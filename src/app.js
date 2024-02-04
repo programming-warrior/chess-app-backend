@@ -13,6 +13,7 @@ const storeGame = require('./controllers/db/storeGame');
 const { verifyToken, verifyTokenSocket } = require('./controllers/token/token');
 const generateRoomId = require('./controllers/generateRandomId');
 const { startClock, stopClock } = require('./controllers/clockLogic');
+const bcrypt=require('bcrypt');
 
 connect((db) => {
     console.log('connected');
@@ -22,15 +23,19 @@ connect((db) => {
     })
 
     const userRoutes = require('./routes/userRoutes');
+    const tokenRoutes=require('./routes/tokenRoutes');
 
     app.use(cors({
-        origin: 'http://localhost:3000',
+        origin: 'http://localhost:3000',    
     }))
-
+    
+    // app.use(cookieParser);
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-
+    
+    
     app.use('/api', userRoutes);
+    app.use('/auth',tokenRoutes);
 
     const validateMove = require('./controllers/chess_logic/validateMove');
     let connections = {};
@@ -349,8 +354,20 @@ connect((db) => {
                         }
 
                         rooms[roomId]['currentPlayer'] = rooms[roomId]['currentPlayer'] === 'w' ? 'b' : 'w';
-                        connections[clientInRoomId[0][0]]?.send(JSON.stringify({ event: "move-validated", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], currentPlayer: rooms[roomId]['currentPlayer'] } }));
-                        connections[clientInRoomId[1][0]]?.send(JSON.stringify({ event: "move-validated", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], currentPlayer: rooms[roomId]['currentPlayer'] } }));
+
+                        let counter=0;
+                        const moves=[];
+                        while(counter<rooms[roomId]['w'].length && counter<rooms[roomId]['b'].length){
+                            moves.push(rooms[roomId]['w'][counter]);
+                            moves.push(rooms[roomId]['b'][counter]);
+                            counter++;
+                        }
+                        if(counter<rooms[roomId]['w'].length){
+                            moves.push(rooms[roomId]['w'][counter]);
+                        }
+
+                        connections[clientInRoomId[0][0]]?.send(JSON.stringify({ event: "move-validated", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], currentPlayer: rooms[roomId]['currentPlayer'] ,moves} }));
+                        connections[clientInRoomId[1][0]]?.send(JSON.stringify({ event: "move-validated", message: { boardPos: rooms[roomId]["boardPos"], check: rooms[roomId]['check'], currentPlayer: rooms[roomId]['currentPlayer'],moves} }));
                     }
                 }
 
