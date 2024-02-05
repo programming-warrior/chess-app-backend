@@ -6,8 +6,27 @@ const {createRefreshToken}=require('../controllers/token/refreshToken');
 const { MongoError } = require('mongodb');
 const {hashPassword,compareHashedPassword}=require('../controllers/hashPassword')
 
-router.post('/checkEmail', (req, res) => {
-
+router.post('/checkUsername', (req, res) => {
+    let username=req.body.username;
+    username=username && typeof(username)==='string'?username.trim():null;
+    if(!username) return res.status(401).json({status:"invalid",message:""}); 
+    //check for username validity
+    if(username.length>80) return res.status(401).json({status:"invalid",message:"username length should not exceed 80"});
+    if(username.length<5) return res.status(401).json({status:"invalid",message:"length should be atleast 5"});
+    const specialChars='$ % ^ & * ( ) ! @ # } { [ ] | ; : \' \" \\ , + = / ? < > ` ~'.split(' ');
+    specialChars.forEach((ch)=>{
+        if(username.includes(ch)) return res.status(401).json({status:"invalid",message:"special char not allowed except[. - _]"});
+    })
+    //check for username existence
+    req.db.collection('players').findOne({username:username}).then((result)=>{
+        if(result){
+            return res.status(401).json({status:"invalid",message:"username doesn't exist"});
+        }
+        return res.status(200).json({status:"valid",message:"username exists"});
+    })
+    .catch((e)=>{
+        return res.status(500).json({status:"invalid",message:"username doesn't exist"});
+    })
 })
 
 

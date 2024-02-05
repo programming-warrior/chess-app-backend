@@ -7,15 +7,14 @@ const createToken=(payload)=>{
 
 //middleware
 const verifyTokenSocket=async(con,req,next)=>{
-    const token=req.rawHeaders[21].split(':')[1];
+    const token=req.rawHeaders[21].split('=')[1];
+    console.log('verfifysocket '+token);
     if(!token){
-        
         const data={
             event:"invalid-token",
         }
-
         con.send(JSON.stringify(data));
-       return ;
+        return ;
     }
     try{
         const decoded= jwt.verify(token,process.env.SECRET_KEY);

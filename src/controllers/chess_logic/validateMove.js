@@ -116,27 +116,37 @@ const validateMove = (start, end, piece, { players, currentPlayer, boardPos, che
       if (type === 'k') {
         //the king has successfully moved so set castle for that color king to false
 
-        canLongCastle = canLongCastle.filter((e) => {
-          return e !== piece.split('-')[1];
-        })
+        for (let i = 0; i < canLongCastle.length; i++) {
+          if (canLongCastle[i] === piece.split('-')[1]) {
+            canLongCastle[i] = '';
+          }
+        }
+        for (let i = 0; i < canShortCastle.length; i++) {
+          if (canShortCastle[i] === piece.split('-')[1]) {
+            canShortCastle[i] = '';
+          }
+        }
 
-        canShortCastle = canShortCastle.filter((e) => {
-          return e !== piece.split('-')[1];
-        })
       }
       if (type === 'r') {
         //rook has successfully moved so set castle for that color king to false
         if (start === 'h1' || start === 'h8') {
 
-          canShortCastle = canShortCastle.filter((e) => {
-            return e !== piece.split('-')[1];
-          })
+          for (let i = 0; i < canShortCastle.length; i++) {
+            if (canShortCastle[i] === piece.split('-')[1]) {
+              canShortCastle[i] = '';
+            }
+          }
+          
         }
         else if (start === 'a1' || start === 'a8') {
 
-          canLongCastle = canLongCastle.filter((e) => {
-            return e !== piece.split('-')[1];
-          })
+          for (let i = 0; i < canLongCastle.length; i++) {
+            if (canLongCastle[i] === piece.split('-')[1]) {
+              canLongCastle[i] = '';
+            }
+          }
+
         }
       }
 
