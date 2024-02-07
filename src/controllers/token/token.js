@@ -8,8 +8,8 @@ const createToken=(payload)=>{
 //middleware
 const verifyTokenSocket=async(con,req,next)=>{
     const token=req.rawHeaders[21].split('=')[1];
-    console.log('verfifysocket '+token);
     if(!token){
+        
         const data={
             event:"invalid-token",
         }

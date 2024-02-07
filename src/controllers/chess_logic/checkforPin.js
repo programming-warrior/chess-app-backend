@@ -128,10 +128,8 @@ module.exports=function checkforPin(start,piece,kingSqr,boardPos){
         }
 
      
-        console.log(start);
         if(moves.indexOf(start)>-1 && !otherPieceInBetween){
-          console.log(moves);
-          console.log(otherPieceInBetween);
+       
           return moves;
         }
 

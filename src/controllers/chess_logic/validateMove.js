@@ -6,7 +6,7 @@ const checkCastling = require('./checkCastling');
 const checkforPin = require('./checkforPin');
 const checkMateDetection = require('./checkMateDetection');
 
-const validateMove = (start, end, piece, { players, currentPlayer, boardPos, check, canShortCastle, canLongCastle, checkMate }) => {
+const validateMove = (start, end, piece, { players, currentPlayer, boardPos, check, canShortCastle, canLongCastle, checkMate, queening}) => {
 
 
 
@@ -152,10 +152,17 @@ const validateMove = (start, end, piece, { players, currentPlayer, boardPos, che
 
       //check for queening
       if (type === 'p') {
-        if ((piece.split('-')[1] === 'w' && parseInt(end.split('')[1]) === 8) || (piece.split('-')[1] === 'b' && parseInt(end.split('')[1]) === 1)) {
-
+        if (piece.split('-')[1] === 'w' && parseInt(end.split('')[1]) === 8){
+          //white queening
+          queening.col='w';
+          queening.pawn=end;
         }
 
+        else if(piece.split('-')[1] === 'b' && parseInt(end.split('')[1]) === 1){
+          //black queening
+          queening.col='b';
+          queening.pawn=end;
+        }
       }
 
       boardPos[end] = boardPos[start];
