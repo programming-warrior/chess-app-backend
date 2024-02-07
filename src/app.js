@@ -29,7 +29,7 @@ connect((db) => {
     const tokenRoutes = require('./routes/tokenRoutes');
 
     app.use(cors({
-        origin: 'http://localhost:3000',
+        origin: ['http://localhost:3000','https://chess-backend-qtxi.onrender.com'],
     }))
 
     // app.use(cookieParser);
@@ -201,13 +201,9 @@ connect((db) => {
 
         con.on('message', (data) => {
             const { event, message } = JSON.parse(data);
-            console.log(event);
             if (event === 'reestablish-connection') {
 
                 const { username } = message;
-                console.log(username);
-                console.log(connections);
-                console.log(rooms);
                 //check if this username exists in any room
                 for (id in rooms) {
                     if (rooms[id].players.hasOwnProperty(username)) {
@@ -252,7 +248,6 @@ connect((db) => {
 
             if (event === 'game-started') {
                 if (!rooms[roomId]['clock']) {
-                    console.log('game-started received');
                     startClock(connections, rooms[roomId]);
                 }
             }
@@ -265,7 +260,6 @@ connect((db) => {
                 }
 
                 if (rooms[roomId]['players'].hasOwnProperty(clientId)) {
-                    console.log(clientId);
                     const blackPlayerId = Object.keys(rooms[roomId]['players']).find((e) => {
                         if (rooms[roomId]['players'][e]['col'] === 'b') {
                             return true;
@@ -344,7 +338,6 @@ connect((db) => {
                 if (sender === currentPlayer) {
                     if (validateMove(startingPosition, movedPosition, piece, rooms[roomId])) {
                         if (rooms[roomId]['checkMate']['status']) {
-                            console.log('checkmate');
                             stopClock(rooms[roomId]);
 
                             //save the game into the database
@@ -505,12 +498,9 @@ connect((db) => {
                     delete rooms[roomId];
                 }
             }
-            console.log('in the close');
-            console.log(Object.keys(rooms));
-            console.log(Object.keys(connections));
+        
         })
-        console.log('in the open')
-        console.log(Object.keys(connections));
+     
     })
 
 
