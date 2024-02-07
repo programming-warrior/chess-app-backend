@@ -29,7 +29,7 @@ connect((db) => {
     const tokenRoutes = require('./routes/tokenRoutes');
 
     app.use(cors({
-        origin: ['http://localhost:3000','https://online-chess-lz0k.onrender.com/'],
+        origin:'*',
     }))
 
     // app.use(cookieParser);
