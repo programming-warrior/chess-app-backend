@@ -8,6 +8,8 @@ const cors = require('cors');
 const app = express();
 const expressWs = require('express-ws')(app);
 const url = require('url');
+app.use(require('express-status-monitor')())
+
 const { connect } = require('./controllers/db/connection');
 const storeGame = require('./controllers/db/storeGame');
 const { verifyToken, verifyTokenSocket } = require('./controllers/token/token');
@@ -18,8 +20,10 @@ const bcrypt = require('bcrypt');
 const checkDetection = require('./controllers/chess_logic/checkDetection');
 const checkMateDetection = require('./controllers/chess_logic/checkMateDetection');
 
+
 connect((db) => {
     console.log('connected');
+
     app.use((req, res, next) => {
         req.db = db;
         next();
