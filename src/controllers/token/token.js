@@ -7,10 +7,10 @@ const createToken=(payload)=>{
 
 //middleware
 const verifyTokenSocket=async(con,req,next)=>{
-    const token=req.rawHeaders[21].split('=')[1];
-    console.log(req.rawHeaders);
+    const secWebSocketProtocolHeader=req.rawHeaders.indexOf('Sec-WebSocket-Protocol');
+    if(secWebSocketProtocolHeader===-1) return res.status(401).end();
+    const token=req.rawHeaders[secWebSocketProtocolHeader+1].split(',')[1].trim();
     if(!token){
-        
         const data={
             event:"invalid-token",
         }

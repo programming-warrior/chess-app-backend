@@ -44,6 +44,8 @@ connect((db) => {
     const validateMove = require('./controllers/chess_logic/validateMove');
     let connections = {};
     let rooms = {};
+    //map for refreshToken and the user
+    let refrshTokens={};
     //rooms data structure example
     //e.g.
     /*
@@ -197,7 +199,6 @@ connect((db) => {
         // con = request.accept(null, 'http://localhost:3000');
         let clientId = request.username;
         let roomId;
-
 
 
         con.on('message', (data) => {
@@ -486,7 +487,7 @@ connect((db) => {
         })
 
         con.on('close', () => {
-
+            console.log(request.rawHeaders);
             //delete the client from the connection
             connections[clientId] = null;
             console.log(clientId + " closing");
