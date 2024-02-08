@@ -8,7 +8,7 @@ const createToken=(payload)=>{
 //middleware
 const verifyTokenSocket=async(con,req,next)=>{
     console.log(req.rawHeaders);
-    const secWebSocketProtocolHeader=req.rawHeaders.indexOf('Sec-WebSocket-Protocol');
+    const secWebSocketProtocolHeader=req.rawHeaders.findIndex(val=>/sec-websocket-protocol/i.test(val));
     console.log(secWebSocketProtocolHeader);
     if(secWebSocketProtocolHeader===-1) {
         const data={
