@@ -16,11 +16,11 @@ router.post('/token',(req, res) => {
         if (!result || !result.token) return res.status(403).end();
         jwt.verify(result.token, process.env.REFRESH_TOKEN, (err, decodedValue) => {
 
-            if (err) res.status(403).end();
+            if (err) return res.status(403).end();
 
             const accessToken = createToken({ username: decodedValue.username });
 
-            res.json({
+            return res.json({
                 username: decodedValue.username,
                 accessToken,
             });

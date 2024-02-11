@@ -14,9 +14,10 @@ router.post('/checkUsername', (req, res) => {
     if(username.length>80) return res.status(401).json({status:"invalid",message:"username length should not exceed 80"});
     if(username.length<5) return res.status(401).json({status:"invalid",message:"length should be atleast 5"});
     const specialChars='$ % ^ & * ( ) ! @ # } { [ ] | ; : \' \" \\ , + = / ? < > ` ~'.split(' ');
-    specialChars.forEach((ch)=>{
+    specialChars.push(" ");
+    for(let ch of specialChars){
         if(username.includes(ch)) return res.status(401).json({status:"invalid",message:"special char not allowed except[. - _]"});
-    })
+    }
     //check for username existence
     req.db.collection('players').findOne({username:username}).then((result)=>{
         if(result){

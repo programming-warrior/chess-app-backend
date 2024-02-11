@@ -1,6 +1,7 @@
 // const http = require("http");
 // const httpServer = http.createServer(app);
 // const webSocketServer = require('websocket').server;
+
 const PORT = 7000;
 require('dotenv').config();
 const express = require('express');
@@ -10,7 +11,6 @@ const expressWs = require('express-ws')(app);
 const url = require('url');
 app.use(require('express-status-monitor')())
 
-const { connect } = require('./controllers/db/connection');
 const storeGame = require('./controllers/db/storeGame');
 const { verifyToken, verifyTokenSocket } = require('./controllers/token/token');
 const generateRoomId = require('./controllers/generateRandomId');
@@ -20,6 +20,17 @@ const bcrypt = require('bcrypt');
 const checkDetection = require('./controllers/chess_logic/checkDetection');
 const checkMateDetection = require('./controllers/chess_logic/checkMateDetection');
 
+
+const { connect } = require('./controllers/db/connection');
+const asyncHook=require('async_hooks');
+const fs=require('fs');
+
+// asyncHook.createHook({
+//     init(asyncId,type,triggerAsyncId){
+//         const id=asyncHook.executionAsyncId();
+//         fs.writeSync(1,`${type} ${asyncId} : trigger ${triggerAsyncId} execution ${id}\n`);
+//     }
+// }).enable();
 
 connect((db) => {
     console.log('connected');
