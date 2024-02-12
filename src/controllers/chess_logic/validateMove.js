@@ -53,10 +53,7 @@ const validateMove = (start, end, piece, { players, currentPlayer, boardPos, che
       }
       if (kingSqr) {
         const allowedMoves = checkforPin(start, piece, kingSqr, boardPos);
-        console.log("allowedMoves");
-        console.log(allowedMoves);
         if (allowedMoves.length > 0) {
-          console.log(allowedMoves);
           moves = moves.filter((value) => {
             return allowedMoves.includes(value);
           })
@@ -183,7 +180,6 @@ const validateMove = (start, end, piece, { players, currentPlayer, boardPos, che
 
       if (check.kingPos && check.kingCol) {
         if (checkMateDetection(check, boardPos)) {
-          console.log('checkmate');
           checkMate.status = true;
         }
       }

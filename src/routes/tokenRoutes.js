@@ -12,7 +12,6 @@ router.post('/token',(req, res) => {
     const refreshTokenCollection = req.db.collection('refreshTokens');
 
     refreshTokenCollection.findOne({ token: refreshToken }).then((result) => {
-
         if (!result || !result.token) return res.status(403).end();
         jwt.verify(result.token, process.env.REFRESH_TOKEN, (err, decodedValue) => {
 
@@ -20,7 +19,7 @@ router.post('/token',(req, res) => {
 
             const accessToken = createToken({ username: decodedValue.username });
 
-            return res.json({
+            return res.status(200).json({
                 username: decodedValue.username,
                 accessToken,
             });

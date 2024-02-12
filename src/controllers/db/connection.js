@@ -5,8 +5,12 @@ const client = new MongoClient(process.env.DB_HOST, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
+  maxPoolSize:100,
+  minPoolSize:20,
 });
+
+
 
 
 async function connect(cb){
@@ -18,8 +22,7 @@ async function connect(cb){
   }
 
   catch(e){
-    console.log(e);
-    process.exit(0);
+    process.exit(1);
   }
 }
 

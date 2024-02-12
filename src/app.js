@@ -22,15 +22,9 @@ const checkMateDetection = require('./controllers/chess_logic/checkMateDetection
 
 
 const { connect } = require('./controllers/db/connection');
-const asyncHook=require('async_hooks');
-const fs=require('fs');
 
-// asyncHook.createHook({
-//     init(asyncId,type,triggerAsyncId){
-//         const id=asyncHook.executionAsyncId();
-//         fs.writeSync(1,`${type} ${asyncId} : trigger ${triggerAsyncId} execution ${id}\n`);
-//     }
-// }).enable();
+
+
 
 connect((db) => {
     console.log('connected');
@@ -93,7 +87,6 @@ connect((db) => {
     }
     
     */
-
 
 
     const initialPos = {
@@ -176,6 +169,7 @@ connect((db) => {
     }
 
     app.get('/initializeRoom', verifyToken, (req, res) => {
+
         const parsedUrl = url.parse(req.url, true);
         const query = parsedUrl.query;
         const gameType = query['type'];
@@ -210,7 +204,7 @@ connect((db) => {
     })
 
 
-    app.ws('/', verifyTokenSocket, (con, request) => {
+    app.ws('/',verifyTokenSocket, (con, request) => {
         // con = request.accept(null, 'http://localhost:3000');
         let clientId = request.username;
         let roomId;
@@ -502,10 +496,8 @@ connect((db) => {
         })
 
         con.on('close', () => {
-            console.log(request.rawHeaders);
             //delete the client from the connection
             connections[clientId] = null;
-            console.log(clientId + " closing");
             //if the players have logged out then remove the room
             if (roomId && rooms[roomId]) {
                 const playerIds = Object.keys(rooms[roomId]['players']);

@@ -91,7 +91,6 @@ router.post('/login',async (req, res) => {
             }
         })
         .catch((e)=>{
-            console.log(e);
             if(e instanceof MongoError) return res.status(500).end();
             return res.status(301).end();
         })

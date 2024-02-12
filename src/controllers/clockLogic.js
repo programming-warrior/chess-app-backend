@@ -1,7 +1,6 @@
 
 
 function startClock(connections,room){
-    console.log('start clock function called');
     const clientIds=Object.keys(room['players']);
     const interval=setInterval(()=>{
         let data;
@@ -35,7 +34,6 @@ function startClock(connections,room){
 
 function stopClock(room){
     if(room['clock']){
-        console.log('stopclock function called');
         clearInterval(room['clock']);
     }
 }

@@ -7,9 +7,7 @@ const createToken=(payload)=>{
 
 //middleware
 const verifyTokenSocket=async(con,req,next)=>{
-    console.log(req.rawHeaders);
     const secWebSocketProtocolHeader=req.rawHeaders.findIndex(val=>/sec-websocket-protocol/i.test(val));
-    console.log(secWebSocketProtocolHeader);
     if(secWebSocketProtocolHeader===-1) {
         const data={
             event:"invalid-token",
@@ -18,7 +16,6 @@ const verifyTokenSocket=async(con,req,next)=>{
         return;
     }
     const token=req.rawHeaders[secWebSocketProtocolHeader+1].split(',')[1].trim();
-    console.log(token);
     if(!token){
         const data={
             event:"invalid-token",

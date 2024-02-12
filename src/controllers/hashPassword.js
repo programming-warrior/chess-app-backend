@@ -5,7 +5,6 @@ async function hashPassword(text,salt){
         return cipher;
     }
     catch(e){
-        console.log(e);
         return null;
     }
 }
